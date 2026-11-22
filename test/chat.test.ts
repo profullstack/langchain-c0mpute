@@ -6,7 +6,7 @@ type Call = { url: string; headers: Headers; body: any };
 
 function mockFetch(respond: () => Response) {
   const calls: Call[] = [];
-  const fetch = (async (input: any, init?: any) => {
+  const fetchImpl: typeof globalThis.fetch = (async (input: any, init?: any) => {
     const req = input instanceof Request ? input : undefined;
     calls.push({
       url: String(req ? req.url : input),
@@ -14,8 +14,8 @@ function mockFetch(respond: () => Response) {
       body: init?.body ? JSON.parse(init.body) : undefined,
     });
     return respond();
-  }) as typeof fetch;
-  return { fetch, calls };
+  }) as typeof globalThis.fetch;
+  return { fetch: fetchImpl, calls };
 }
 
 const completion = (content: string) =>

@@ -99,7 +99,7 @@ export class ChatC0mpute extends ChatOpenAICompletions {
   }
 
   get lc_secrets(): { [key: string]: string } | undefined {
-    return { apiKey: 'C0MPUTE_API_KEY' };
+    return { apiKey: 'C0MPUTE_API_KEY' }; // gitleaks:allow (env var name)
   }
 
   constructor(fields: ChatC0mputeInput = {}) {
