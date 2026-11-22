@@ -74,7 +74,7 @@ console.log(await chain.invoke({ text: 'c0mpute pays people for spare compute.' 
 
 ## Limits
 
-- No tool calling yet: `bindTools()` throws, so tool-calling agents will not work. Plain chat, chains and RAG do.
+- Tool calling: `bindTools()` works on `auto` and tool-capable models (`qwen3:4b`, `nemotron-3-nano:4b`, `qwen2.5-coder:7b`, `qwen3-coder:30b`, ...), so tool-calling agents run. Other models answer 400. See https://c0mpute.com/docs#api.
 - Text only: multi-part messages are joined into one string and image parts are dropped.
 - Structured output is not enforced; ask for JSON and validate it yourself.
 - Up to 200 messages and 200,000 characters per request.

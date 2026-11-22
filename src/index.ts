@@ -36,15 +36,14 @@ export interface ChatC0mputeInput
 }
 
 /**
- * Shape a Chat Completions body for c0mpute: string message content only
- * (text parts are joined, other parts dropped), no tool fields, and
- * `max_tokens` instead of `max_completion_tokens`.
+ * Shape a Chat Completions body for c0mpute: string message content (text
+ * parts are joined, other parts dropped) and `max_tokens` instead of
+ * `max_completion_tokens`. Tool fields (`tools`, `tool_choice`,
+ * `parallel_tool_calls`, assistant `tool_calls`, `tool` results) pass
+ * through: c0mpute supports tool calling on `auto` and tool-capable models.
  */
 export function toC0mputeBody(body: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = { ...body };
-  delete out.tools;
-  delete out.tool_choice;
-  delete out.parallel_tool_calls;
   delete out.stream_options;
   if (out.max_completion_tokens !== undefined && out.max_tokens === undefined) {
     out.max_tokens = out.max_completion_tokens;
@@ -87,6 +86,9 @@ function c0mputeFetch(base: typeof fetch = fetch): typeof fetch {
  * import { ChatC0mpute } from '@profullstack/langchain-c0mpute';
  * const llm = new ChatC0mpute({ model: 'auto' });
  * const res = await llm.invoke('Hello');
+ *
+ * // Tool calling (auto, qwen3:4b, qwen2.5-coder:7b, nemotron-3-nano:4b, ...)
+ * const withTools = llm.bindTools([weatherTool]);
  * ```
  */
 export class ChatC0mpute extends ChatOpenAICompletions {
@@ -123,10 +125,4 @@ export class ChatC0mpute extends ChatOpenAICompletions {
     });
   }
 
-  /** c0mpute does not support tool calling yet. */
-  override bindTools(): never {
-    throw new Error(
-      'c0mpute does not support tool calling yet. Use the model for plain chat, or attach tools as c0mpute chat plugins on https://c0mpute.com.',
-    );
-  }
 }
