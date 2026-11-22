@@ -1,6 +1,6 @@
 {
   "name": "@profullstack/langchain-c0mpute",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "LangChain.js chat model for c0mpute: open-weight models on a peer-to-peer compute network, priced by sealed-bid auction.",
   "license": "MIT",
   "author": "Profullstack, Inc. <hello@c0mpute.com>",

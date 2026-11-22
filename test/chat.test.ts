@@ -82,9 +82,46 @@ describe('ChatC0mpute', () => {
     expect(calls[0].body.stream_options).toBeUndefined();
   });
 
-  it('refuses bindTools with a clear error', () => {
-    const llm = new ChatC0mpute({ apiKey: 'k' });
-    expect(() => (llm as any).bindTools([])).toThrow(/tool calling/);
+  it('bindTools sends tools and returns tool_calls', async () => {
+    const { fetch, calls } = mockFetch(
+      () =>
+        new Response(
+          JSON.stringify({
+            id: 'chatcmpl-1',
+            object: 'chat.completion',
+            created: 1,
+            model: 'qwen3:4b',
+            choices: [
+              {
+                index: 0,
+                message: {
+                  role: 'assistant',
+                  content: null,
+                  tool_calls: [{ id: 'call_1', type: 'function', function: { name: 'get_weather', arguments: '{"city":"Paris"}' } }],
+                },
+                finish_reason: 'tool_calls',
+              },
+            ],
+            usage: { prompt_tokens: 3, completion_tokens: 1, total_tokens: 4 },
+          }),
+          { headers: { 'content-type': 'application/json' } },
+        ),
+    );
+    const llm = new ChatC0mpute({ apiKey: 'k', configuration: { fetch } });
+    const res = await llm
+      .bindTools([
+        {
+          type: 'function',
+          function: {
+            name: 'get_weather',
+            description: 'Current weather for a city',
+            parameters: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+          },
+        },
+      ])
+      .invoke('weather in Paris?');
+    expect(calls[0].body.tools[0].function.name).toBe('get_weather');
+    expect(res.tool_calls?.[0]).toMatchObject({ name: 'get_weather', args: { city: 'Paris' }, id: 'call_1' });
   });
 
   it('requires an API key', () => {
@@ -99,7 +136,7 @@ describe('ChatC0mpute', () => {
 });
 
 describe('toC0mputeBody', () => {
-  it('maps max_completion_tokens and drops tool fields', () => {
+  it('maps max_completion_tokens and keeps tool fields', () => {
     expect(
       toC0mputeBody({
         model: 'auto',
@@ -108,6 +145,6 @@ describe('toC0mputeBody', () => {
         tools: [{}],
         tool_choice: 'auto',
       }),
-    ).toEqual({ model: 'auto', messages: [], max_tokens: 50 });
+    ).toEqual({ model: 'auto', messages: [], max_tokens: 50, tools: [{}], tool_choice: 'auto' });
   });
 });
